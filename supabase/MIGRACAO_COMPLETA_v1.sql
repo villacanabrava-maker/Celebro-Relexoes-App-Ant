@@ -858,6 +858,7 @@ grant usage on schema aplicacao to authenticated, service_role;
 alter default privileges for role postgres in schema aplicacao
   revoke execute on functions from public;
 
+drop function if exists aplicacao.listar_obras();
 create or replace function aplicacao.listar_obras()
 returns table (
   id uuid,
@@ -928,6 +929,7 @@ $$;
 comment on function aplicacao.listar_obras() is
   'Lista somente as obras do usuário autenticado e a versão física mais recente de cada obra.';
 
+drop function if exists aplicacao.registrar_obra_arquivo(uuid, uuid, text, text, text, text, text, text, text, text, bigint, text, text, text, date, text);
 create or replace function aplicacao.registrar_obra_arquivo(
   p_obra_id uuid,
   p_versao_id uuid,
@@ -2000,6 +2002,7 @@ begin
   end if;
 end $$;
 
+drop function if exists processamento.validar_evidencia_mesmo_documento();
 create or replace function processamento.validar_evidencia_mesmo_documento()
 returns trigger
 language plpgsql
@@ -2053,6 +2056,7 @@ execute function processamento.validar_evidencia_mesmo_documento();
 -- Deduplicação por usuario+SHA-256 com lock transacional, sem transformar o índice
 -- recomendado pelo Dicionário em uma restrição UNIQUE estrutural.
 
+drop function if exists aplicacao.registrar_obra_arquivo(uuid, uuid, text, text, text, text, text, text, text, text, bigint, text, text, text, date, text);
 create or replace function aplicacao.registrar_obra_arquivo(
   p_obra_id uuid,
   p_versao_id uuid,
@@ -2192,6 +2196,7 @@ grant execute on function aplicacao.registrar_obra_arquivo(
 -- 0017_api_backend_workflow_processamento
 -- Operações server-only do workflow. Nenhuma função abaixo é executável pelo navegador.
 
+drop function if exists aplicacao.backend_iniciar_processamento(uuid, uuid);
 create or replace function aplicacao.backend_iniciar_processamento(
   p_usuario_id uuid,
   p_versao_obra_id uuid
@@ -2306,6 +2311,7 @@ begin
 end;
 $$;
 
+drop function if exists aplicacao.backend_obter_execucao(uuid);
 create or replace function aplicacao.backend_obter_execucao(p_execucao_id uuid)
 returns table (
   execucao_id uuid,
@@ -2336,6 +2342,7 @@ as $$
   limit 1
 $$;
 
+drop function if exists aplicacao.backend_iniciar_etapa(uuid, text, text, numeric);
 create or replace function aplicacao.backend_iniciar_etapa(
   p_execucao_id uuid,
   p_nome_etapa text,
@@ -2386,6 +2393,7 @@ begin
 end;
 $$;
 
+drop function if exists aplicacao.backend_concluir_etapa(uuid, text, numeric, text, text, jsonb);
 create or replace function aplicacao.backend_concluir_etapa(
   p_execucao_id uuid,
   p_nome_etapa text,
@@ -2430,6 +2438,7 @@ begin
 end;
 $$;
 
+drop function if exists aplicacao.backend_falhar_execucao(uuid, text, text, text, jsonb);
 create or replace function aplicacao.backend_falhar_execucao(
   p_execucao_id uuid,
   p_nome_etapa text,
@@ -2699,6 +2708,7 @@ begin
 end;
 $$;
 
+drop function if exists aplicacao.backend_registrar_workflow_iniciado(uuid);
 create or replace function aplicacao.backend_registrar_workflow_iniciado(
   p_execucao_id uuid
 )
@@ -2721,6 +2731,7 @@ begin
 end;
 $$;
 
+drop function if exists aplicacao.backend_iniciar_etapa(uuid, text, text, numeric);
 create or replace function aplicacao.backend_iniciar_etapa(
   p_execucao_id uuid,
   p_nome_etapa text,
@@ -2780,6 +2791,7 @@ begin
 end;
 $$;
 
+drop function if exists aplicacao.backend_falhar_execucao(uuid, text, text, text, jsonb);
 create or replace function aplicacao.backend_falhar_execucao(
   p_execucao_id uuid,
   p_nome_etapa text,
@@ -2852,6 +2864,7 @@ grant execute on function aplicacao.backend_falhar_execucao(uuid, text, text, te
 -- 0019_idempotencia_transicoes_workflow
 -- Endurece as transições do workflow contra chamadas atrasadas, replays e regressão de estado.
 
+drop function if exists aplicacao.backend_registrar_workflow_iniciado(uuid);
 create or replace function aplicacao.backend_registrar_workflow_iniciado(
   p_execucao_id uuid
 )
@@ -2874,6 +2887,7 @@ begin
 end;
 $$;
 
+drop function if exists aplicacao.backend_iniciar_etapa(uuid, text, text, numeric);
 create or replace function aplicacao.backend_iniciar_etapa(
   p_execucao_id uuid,
   p_nome_etapa text,
@@ -2948,6 +2962,7 @@ begin
 end;
 $$;
 
+drop function if exists aplicacao.backend_concluir_etapa(uuid, text, numeric, text, text, jsonb);
 create or replace function aplicacao.backend_concluir_etapa(
   p_execucao_id uuid,
   p_nome_etapa text,
@@ -3026,6 +3041,7 @@ begin
 end;
 $$;
 
+drop function if exists aplicacao.backend_falhar_execucao(uuid, text, text, text, jsonb);
 create or replace function aplicacao.backend_falhar_execucao(
   p_execucao_id uuid,
   p_nome_etapa text,
@@ -3145,6 +3161,7 @@ create index if not exists artefatos_execucao_usuario_criado_idx
 alter table processamento.artefatos_execucao enable row level security;
 revoke all on processamento.artefatos_execucao from public, anon, authenticated, service_role;
 
+drop function if exists aplicacao.backend_obter_artefato_execucao(uuid, text);
 create or replace function aplicacao.backend_obter_artefato_execucao(
   p_execucao_id uuid,
   p_tipo text
@@ -3172,6 +3189,7 @@ as $$
   limit 1
 $$;
 
+drop function if exists aplicacao.backend_registrar_artefato_execucao(uuid, text, text, text, bigint, text, jsonb);
 create or replace function aplicacao.backend_registrar_artefato_execucao(
   p_execucao_id uuid,
   p_tipo text,
