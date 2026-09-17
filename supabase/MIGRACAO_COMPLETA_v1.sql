@@ -2002,7 +2002,6 @@ begin
   end if;
 end $$;
 
-drop function if exists processamento.validar_evidencia_mesmo_documento();
 create or replace function processamento.validar_evidencia_mesmo_documento()
 returns trigger
 language plpgsql
