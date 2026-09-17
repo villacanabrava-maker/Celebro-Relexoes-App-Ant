@@ -1,7 +1,7 @@
 # Configuração local reproduzível do Supabase.
 # Não contém segredos. Credenciais privadas devem permanecer em variáveis de ambiente.
 
-project_id = "cerebro-autoral"
+project_id = "xwpfigystolwauglpukd"
 
 [api]
 enabled = true
