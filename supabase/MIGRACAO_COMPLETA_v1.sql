@@ -1173,8 +1173,17 @@ end $$;
 -- Cria execuções completas e etapas idempotentes/reexecutáveis.
 
 -- Permite FKs compostas (entidade + usuário) sem depender apenas do UUID.
-alter table biblioteca.versoes_obras
-  add constraint versoes_obras_id_usuario_unique unique (id, usuario_id);
+do $$
+begin
+  if not exists (
+    select 1 from pg_constraint
+    where conname = 'versoes_obras_id_usuario_unique'
+      and conrelid = 'biblioteca.versoes_obras'::regclass
+  ) then
+    alter table biblioteca.versoes_obras
+      add constraint versoes_obras_id_usuario_unique unique (id, usuario_id);
+  end if;
+end $$;
 
 create table if not exists processamento.execucoes (
   id uuid primary key default gen_random_uuid(),
@@ -1753,8 +1762,17 @@ create index if not exists sinteses_usuario_idx
 -- 0013_processamento_elementos_vetores_grafo
 -- Fecha a representação intelectual do Documento Processado e a FK adiada da Taxonomia.
 
-alter table processamento.fragmentos
-  add constraint fragmentos_id_usuario_unique unique (id, usuario_id);
+do $$
+begin
+  if not exists (
+    select 1 from pg_constraint
+    where conname = 'fragmentos_id_usuario_unique'
+      and conrelid = 'processamento.fragmentos'::regclass
+  ) then
+    alter table processamento.fragmentos
+      add constraint fragmentos_id_usuario_unique unique (id, usuario_id);
+  end if;
+end $$;
 
 create table if not exists processamento.vetores (
   id uuid primary key default gen_random_uuid(),
@@ -1873,11 +1891,20 @@ create index if not exists relacoes_elementos_origem_usuario_idx on processament
 create index if not exists relacoes_elementos_destino_usuario_idx on processamento.relacoes_elementos (elemento_destino_id, usuario_id);
 create index if not exists relacoes_elementos_tipo_idx on processamento.relacoes_elementos (usuario_id, tipo_relacao);
 
-alter table taxonomia.classificacoes_elementos
-  add constraint classificacoes_elementos_elemento_usuario_fk
-  foreign key (elemento_id, usuario_id)
-  references processamento.elementos(id, usuario_id)
-  on delete cascade;
+do $$
+begin
+  if not exists (
+    select 1 from pg_constraint
+    where conname = 'classificacoes_elementos_elemento_usuario_fk'
+      and conrelid = 'taxonomia.classificacoes_elementos'::regclass
+  ) then
+    alter table taxonomia.classificacoes_elementos
+      add constraint classificacoes_elementos_elemento_usuario_fk
+      foreign key (elemento_id, usuario_id)
+      references processamento.elementos(id, usuario_id)
+      on delete cascade;
+  end if;
+end $$;
 
 alter table processamento.vetores enable row level security;
 alter table processamento.elementos enable row level security;
@@ -1960,9 +1987,18 @@ create index if not exists classificacoes_elementos_elemento_usuario_idx
 -- Evidências só podem apontar para fragmentos do mesmo Documento Processado.
 -- Documento Processado ativo exige timestamp de publicação.
 
-alter table processamento.documentos_processados
-  add constraint documentos_processados_publicacao_ativa_check
-  check (estado <> 'ativo' or publicado_em is not null);
+do $$
+begin
+  if not exists (
+    select 1 from pg_constraint
+    where conname = 'documentos_processados_publicacao_ativa_check'
+      and conrelid = 'processamento.documentos_processados'::regclass
+  ) then
+    alter table processamento.documentos_processados
+      add constraint documentos_processados_publicacao_ativa_check
+      check (estado <> 'ativo' or publicado_em is not null);
+  end if;
+end $$;
 
 create or replace function processamento.validar_evidencia_mesmo_documento()
 returns trigger
