@@ -1,15 +1,16 @@
-# Estado Atual do Projeto
+# Estado Atual do Projeto — Cérebro Autoral
 
-Atualizado em **16/09/2026** durante a validação final do PR #13 (`feature/processamento-normalizacao`).
+Atualizado em **17/09/2026** — Transição para o novo projeto (Regra Zero).
 
-## Infraestrutura oficial
+## Infraestrutura do Projeto Novo
 
-- GitHub: `villacanabrava-maker/Biblioteca-Celebro-Reflex-es-`
-- `main`: `15250537998d36c5c4df5375990c1f6c4cc66ed3`
-- Supabase: `xzkzdaxxmizcgfkjgzoq` — `ACTIVE_HEALTHY`, região `us-west-2`, PostgreSQL `17.6`
-- Vercel: projeto `cerebro-autoral`
-- Produção: `https://cerebro-autoral.vercel.app`
+- **Status:** Em transição para as novas contas do autor (Regra Zero aplicada).
+- **GitHub:** Repositório novo do autor em configuração.
+- **Supabase:** Novo projeto Supabase preparado (PostgreSQL 17 + RLS + Storage).
+- **Vercel:** Novo deploy em configuração na Vercel (Node 22.x).
+- **IA:** OpenAI (Responses API / Structured Outputs).
 - `PROCESSAMENTO_WORKFLOW_ATIVO=false`
+
 
 ## Marco atual
 
