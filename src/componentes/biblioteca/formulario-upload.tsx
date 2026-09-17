@@ -157,10 +157,10 @@ export function FormularioUploadBiblioteca() {
     let caminhoArquivo: string | null = null
 
     try {
-      const { data: claimsData, error: claimsError } = await supabase.auth.getClaims()
-      const usuarioId = claimsData?.claims?.sub
+      const { data: { user }, error: userError } = await supabase.auth.getUser()
+      const usuarioId = user?.id
 
-      if (claimsError || !usuarioId) {
+      if (userError || !usuarioId) {
         throw new Error('Sua sessão não pôde ser validada. Entre novamente.')
       }
 

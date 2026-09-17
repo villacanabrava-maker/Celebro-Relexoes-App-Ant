@@ -47,19 +47,17 @@ export async function updateSession(request: NextRequest) {
     },
   })
 
-  // Não inserir chamadas entre createServerClient e getClaims().
-  // getClaims() valida a identidade; getSession() não é usado para autorização.
-  const { data } = await supabase.auth.getClaims()
-  const claims = data?.claims
+  // getUser() valida o JWT e retorna o usuario autenticado
+  const { data: { user } } = await supabase.auth.getUser()
 
-  if (!claims && !rotaPublica) {
+  if (!user && !rotaPublica) {
     const redirectUrl = request.nextUrl.clone()
     redirectUrl.pathname = '/login'
     redirectUrl.searchParams.set('next', pathname)
     return NextResponse.redirect(redirectUrl)
   }
 
-  if (claims && pathname === '/login') {
+  if (user && pathname === '/login') {
     const redirectUrl = request.nextUrl.clone()
     redirectUrl.pathname = '/'
     redirectUrl.search = ''
@@ -68,3 +66,4 @@ export async function updateSession(request: NextRequest) {
 
   return supabaseResponse
 }
+

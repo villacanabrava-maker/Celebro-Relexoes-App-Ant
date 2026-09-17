@@ -33,10 +33,10 @@ export async function POST(request: Request) {
   }
 
   const supabase = await createClient()
-  const { data: claimsData, error: claimsError } = await supabase.auth.getClaims()
-  const usuarioId = claimsData?.claims?.sub
+  const { data: { user }, error: userError } = await supabase.auth.getUser()
+  const usuarioId = user?.id
 
-  if (claimsError || !usuarioId) {
+  if (userError || !usuarioId) {
     return NextResponse.json(
       { erro: 'nao_autenticado', mensagem: 'Autenticação obrigatória.' },
       { status: 401 }

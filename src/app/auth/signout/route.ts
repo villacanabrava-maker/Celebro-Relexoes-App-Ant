@@ -4,9 +4,9 @@ import { createClient } from '@/infraestrutura/supabase/server'
 
 export async function POST(request: NextRequest) {
   const supabase = await createClient()
-  const { data } = await supabase.auth.getClaims()
+  const { data: { user } } = await supabase.auth.getUser()
 
-  if (data?.claims) {
+  if (user) {
     await supabase.auth.signOut()
   }
 
