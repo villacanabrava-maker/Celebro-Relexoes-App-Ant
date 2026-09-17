@@ -47,7 +47,7 @@ commit;
 
 begin;
 
-create table sistema.modelos_ia (
+create table if not exists sistema.modelos_ia (
   id uuid primary key default gen_random_uuid(),
   provedor text not null,
   identificador_modelo text not null,
@@ -72,7 +72,7 @@ comment on column sistema.modelos_ia.finalidade is
 comment on column sistema.modelos_ia.dimensoes_embedding is
   'Dimensionalidade quando a finalidade for embedding. Nula para modelos não vetoriais.';
 
-create table sistema.prompts (
+create table if not exists sistema.prompts (
   id uuid primary key default gen_random_uuid(),
   codigo text not null unique,
   nome text not null,
@@ -83,7 +83,7 @@ create table sistema.prompts (
 comment on table sistema.prompts is
   'Identidade lógica e estável de cada prompt. O conteúdo vive em versões imutáveis e também é versionado no GitHub.';
 
-create table sistema.versoes_prompts (
+create table if not exists sistema.versoes_prompts (
   id uuid primary key default gen_random_uuid(),
   prompt_id uuid not null references sistema.prompts(id) on delete restrict,
   numero_versao integer not null,
@@ -102,7 +102,7 @@ comment on table sistema.versoes_prompts is
 comment on column sistema.versoes_prompts.schema_saida is
   'JSON Schema esperado quando o prompt produz dado estruturado; pode ser nulo quando não se aplica.';
 
-create table sistema.versoes_pipeline (
+create table if not exists sistema.versoes_pipeline (
   id uuid primary key default gen_random_uuid(),
   numero_versao text not null unique,
   descricao text,
@@ -120,7 +120,7 @@ comment on table sistema.versoes_pipeline is
 comment on column sistema.versoes_pipeline.estado is
   'Estado técnico definido nesta implementação: rascunho, ativa, arquivada ou invalidada.';
 
-create table sistema.configuracoes_usuario (
+create table if not exists sistema.configuracoes_usuario (
   usuario_id uuid primary key references auth.users(id) on delete cascade,
   idioma_preferencial text not null default 'pt-BR',
   comportamento_recuperacao text not null default 'adaptativo',
@@ -186,7 +186,7 @@ commit;
 --    processamento.elementos será criado somente em migration posterior.
 -- 4. O schema permanece interno: anon/authenticated não recebem acesso direto.
 
-create table taxonomia.versoes (
+create table if not exists taxonomia.versoes (
   id uuid primary key default gen_random_uuid(),
   numero_versao text not null unique,
   descricao text not null,
@@ -204,10 +204,10 @@ comment on column taxonomia.versoes.numero_versao is
 comment on column taxonomia.versoes.estado is
   'Estado técnico da versão: rascunho, ativa ou arquivada.';
 
-create index versoes_taxonomia_estado_idx
+create index if not exists versoes_taxonomia_estado_idx
   on taxonomia.versoes (estado);
 
-create table taxonomia.conceitos (
+create table if not exists taxonomia.conceitos (
   id uuid primary key default gen_random_uuid(),
   versao_taxonomia_id uuid not null
     references taxonomia.versoes(id) on delete restrict,
@@ -242,12 +242,12 @@ comment on column taxonomia.conceitos.estado is
 comment on column taxonomia.conceitos.dominio is
   'Domínio intelectual canônico ao qual o conceito pertence.';
 
-create index conceitos_versao_idx
+create index if not exists conceitos_versao_idx
   on taxonomia.conceitos (versao_taxonomia_id);
-create index conceitos_dominio_idx
+create index if not exists conceitos_dominio_idx
   on taxonomia.conceitos (dominio);
 
-create table taxonomia.termos (
+create table if not exists taxonomia.termos (
   id uuid primary key default gen_random_uuid(),
   conceito_id uuid not null
     references taxonomia.conceitos(id) on delete cascade,
@@ -272,12 +272,12 @@ comment on table taxonomia.termos is
 comment on column taxonomia.termos.termo_normalizado is
   'Forma normalizada usada para comparação e recuperação taxonômica.';
 
-create index termos_normalizado_idx
+create index if not exists termos_normalizado_idx
   on taxonomia.termos (termo_normalizado);
-create index termos_conceito_idx
+create index if not exists termos_conceito_idx
   on taxonomia.termos (conceito_id);
 
-create table taxonomia.relacoes (
+create table if not exists taxonomia.relacoes (
   id uuid primary key default gen_random_uuid(),
   conceito_origem_id uuid not null
     references taxonomia.conceitos(id) on delete cascade,
@@ -310,12 +310,12 @@ create table taxonomia.relacoes (
 comment on table taxonomia.relacoes is
   'Relações semânticas entre conceitos canônicos, com confiança e origem rastreáveis.';
 
-create index relacoes_origem_idx
+create index if not exists relacoes_origem_idx
   on taxonomia.relacoes (conceito_origem_id, tipo_relacao);
-create index relacoes_destino_idx
+create index if not exists relacoes_destino_idx
   on taxonomia.relacoes (conceito_destino_id, tipo_relacao);
 
-create table taxonomia.classificacoes_elementos (
+create table if not exists taxonomia.classificacoes_elementos (
   id uuid primary key default gen_random_uuid(),
   usuario_id uuid not null references auth.users(id) on delete cascade,
   elemento_id uuid not null,
@@ -337,11 +337,11 @@ comment on table taxonomia.classificacoes_elementos is
 comment on column taxonomia.classificacoes_elementos.elemento_id is
   'Referência lógica futura a processamento.elementos.id; FK deliberadamente adiada pela ordem canônica das migrations.';
 
-create index classificacoes_elementos_usuario_idx
+create index if not exists classificacoes_elementos_usuario_idx
   on taxonomia.classificacoes_elementos (usuario_id);
-create index classificacoes_elementos_elemento_idx
+create index if not exists classificacoes_elementos_elemento_idx
   on taxonomia.classificacoes_elementos (elemento_id);
-create index classificacoes_elementos_conceito_idx
+create index if not exists classificacoes_elementos_conceito_idx
   on taxonomia.classificacoes_elementos (conceito_id);
 
 alter table taxonomia.classificacoes_elementos enable row level security;
@@ -422,7 +422,7 @@ end $$;
 -- 0004_biblioteca
 -- Estrutura canônica da Biblioteca: obras lógicas e suas versões físicas.
 
-create table biblioteca.obras (
+create table if not exists biblioteca.obras (
   id uuid primary key default gen_random_uuid(),
   usuario_id uuid not null references auth.users(id) on delete cascade,
   codigo text not null,
@@ -502,13 +502,13 @@ comment on column biblioteca.obras.participacao_cerebro is
 comment on column biblioteca.obras.metadados_auxiliares is
   'Metadados flexíveis não canônicos; dados importantes permanecem em colunas próprias.';
 
-create index obras_usuario_estado_idx
+create index if not exists obras_usuario_estado_idx
   on biblioteca.obras (usuario_id, estado);
 
-create index obras_usuario_autoria_participacao_idx
+create index if not exists obras_usuario_autoria_participacao_idx
   on biblioteca.obras (usuario_id, autoria, participacao_cerebro);
 
-create index obras_busca_textual_idx
+create index if not exists obras_busca_textual_idx
   on biblioteca.obras
   using gin (
     to_tsvector(
@@ -517,7 +517,7 @@ create index obras_busca_textual_idx
     )
   );
 
-create table biblioteca.versoes_obras (
+create table if not exists biblioteca.versoes_obras (
   id uuid primary key default gen_random_uuid(),
   usuario_id uuid not null references auth.users(id) on delete cascade,
   obra_id uuid not null,
@@ -564,10 +564,10 @@ comment on column biblioteca.versoes_obras.caminho_arquivo is
 comment on column biblioteca.versoes_obras.hash_sha256 is
   'Hash SHA-256 utilizado para integridade e deduplicação.';
 
-create index versoes_obras_usuario_hash_idx
+create index if not exists versoes_obras_usuario_hash_idx
   on biblioteca.versoes_obras (usuario_id, hash_sha256);
 
-create index versoes_obras_usuario_estado_idx
+create index if not exists versoes_obras_usuario_estado_idx
   on biblioteca.versoes_obras (usuario_id, estado_processamento);
 
 alter table biblioteca.obras enable row level security;
@@ -678,7 +678,7 @@ end $$;
 -- O advisor de performance do Supabase detectou a ausência deste índice após
 -- a aplicação de 0004_biblioteca.
 
-create index versoes_obras_obra_usuario_idx
+create index if not exists versoes_obras_obra_usuario_idx
   on biblioteca.versoes_obras (obra_id, usuario_id);
 
 comment on index biblioteca.versoes_obras_obra_usuario_idx is
@@ -1117,7 +1117,7 @@ end $$;
 alter table biblioteca.versoes_obras
   add constraint versoes_obras_id_usuario_unique unique (id, usuario_id);
 
-create table processamento.execucoes (
+create table if not exists processamento.execucoes (
   id uuid primary key default gen_random_uuid(),
   usuario_id uuid not null references auth.users(id) on delete cascade,
   versao_obra_id uuid not null,
@@ -1177,19 +1177,19 @@ comment on column processamento.execucoes.etapa_atual is
 comment on column processamento.execucoes.mensagem_erro is
   'Resumo seguro do erro, sem conteúdo sensível desnecessário.';
 
-create index execucoes_usuario_estado_idx
+create index if not exists execucoes_usuario_estado_idx
   on processamento.execucoes (usuario_id, estado, criado_em desc);
 
-create index execucoes_versao_obra_usuario_idx
+create index if not exists execucoes_versao_obra_usuario_idx
   on processamento.execucoes (versao_obra_id, usuario_id);
 
-create index execucoes_versao_pipeline_idx
+create index if not exists execucoes_versao_pipeline_idx
   on processamento.execucoes (versao_pipeline_id);
 
-create index execucoes_versao_taxonomia_idx
+create index if not exists execucoes_versao_taxonomia_idx
   on processamento.execucoes (versao_taxonomia_id);
 
-create table processamento.etapas_execucao (
+create table if not exists processamento.etapas_execucao (
   id uuid primary key default gen_random_uuid(),
   usuario_id uuid not null references auth.users(id) on delete cascade,
   execucao_id uuid not null,
@@ -1246,10 +1246,10 @@ comment on column processamento.etapas_execucao.detalhes_auxiliares is
 
 -- A constraint unique(execucao_id, ordem) já fornece o índice ordenado exigido
 -- pelo Dicionário Mestre; não criamos um índice duplicado.
-create index etapas_execucao_estado_criado_idx
+create index if not exists etapas_execucao_estado_criado_idx
   on processamento.etapas_execucao (estado, criado_em);
 
-create index etapas_execucao_usuario_estado_idx
+create index if not exists etapas_execucao_usuario_estado_idx
   on processamento.etapas_execucao (usuario_id, estado);
 
 alter table processamento.execucoes enable row level security;
@@ -1342,7 +1342,7 @@ end $$;
 -- 0009_indice_fk_etapas_execucao
 -- Corrige o alerta do advisor de performance após 0008_processamento_execucoes.
 
-create index etapas_execucao_execucao_usuario_idx
+create index if not exists etapas_execucao_execucao_usuario_idx
   on processamento.etapas_execucao (execucao_id, usuario_id);
 
 comment on index processamento.etapas_execucao_execucao_usuario_idx is
@@ -1399,7 +1399,7 @@ on conflict (numero_versao) do nothing;
 -- 0011_processamento_documentos_hierarquia
 -- Representação computacional hierárquica: documento, seções, fragmentos e sínteses.
 
-create table processamento.documentos_processados (
+create table if not exists processamento.documentos_processados (
   id uuid primary key default gen_random_uuid(),
   usuario_id uuid not null references auth.users(id) on delete cascade,
   obra_id uuid not null,
@@ -1442,23 +1442,23 @@ create table processamento.documentos_processados (
   constraint documentos_processados_titulo_check check (length(trim(titulo)) > 0)
 );
 
-create unique index documentos_processados_ativo_por_obra_uidx
+create unique index if not exists documentos_processados_ativo_por_obra_uidx
   on processamento.documentos_processados (usuario_id, obra_id)
   where estado = 'ativo';
-create index documentos_processados_obra_usuario_idx
+create index if not exists documentos_processados_obra_usuario_idx
   on processamento.documentos_processados (obra_id, usuario_id);
-create index documentos_processados_versao_usuario_idx
+create index if not exists documentos_processados_versao_usuario_idx
   on processamento.documentos_processados (versao_obra_id, usuario_id);
-create index documentos_processados_execucao_usuario_idx
+create index if not exists documentos_processados_execucao_usuario_idx
   on processamento.documentos_processados (execucao_id, usuario_id);
-create index documentos_processados_pipeline_idx
+create index if not exists documentos_processados_pipeline_idx
   on processamento.documentos_processados (versao_pipeline_id);
-create index documentos_processados_taxonomia_idx
+create index if not exists documentos_processados_taxonomia_idx
   on processamento.documentos_processados (versao_taxonomia_id);
-create index documentos_processados_estado_idx
+create index if not exists documentos_processados_estado_idx
   on processamento.documentos_processados (usuario_id, estado, processado_em desc);
 
-create table processamento.secoes (
+create table if not exists processamento.secoes (
   id uuid primary key default gen_random_uuid(),
   usuario_id uuid not null references auth.users(id) on delete cascade,
   documento_processado_id uuid not null,
@@ -1493,12 +1493,12 @@ create table processamento.secoes (
   )
 );
 
-create index secoes_documento_usuario_ordem_idx
+create index if not exists secoes_documento_usuario_ordem_idx
   on processamento.secoes (documento_processado_id, usuario_id, ordem);
-create index secoes_pai_documento_usuario_idx
+create index if not exists secoes_pai_documento_usuario_idx
   on processamento.secoes (secao_pai_id, documento_processado_id, usuario_id);
 
-create table processamento.fragmentos (
+create table if not exists processamento.fragmentos (
   id uuid primary key default gen_random_uuid(),
   usuario_id uuid not null references auth.users(id) on delete cascade,
   documento_processado_id uuid not null,
@@ -1546,18 +1546,18 @@ create table processamento.fragmentos (
   )
 );
 
-create index fragmentos_documento_usuario_ordem_idx
+create index if not exists fragmentos_documento_usuario_ordem_idx
   on processamento.fragmentos (documento_processado_id, usuario_id, ordem);
-create index fragmentos_secao_documento_usuario_idx
+create index if not exists fragmentos_secao_documento_usuario_idx
   on processamento.fragmentos (secao_id, documento_processado_id, usuario_id);
-create index fragmentos_anterior_documento_usuario_idx
+create index if not exists fragmentos_anterior_documento_usuario_idx
   on processamento.fragmentos (fragmento_anterior_id, documento_processado_id, usuario_id);
-create index fragmentos_seguinte_documento_usuario_idx
+create index if not exists fragmentos_seguinte_documento_usuario_idx
   on processamento.fragmentos (fragmento_seguinte_id, documento_processado_id, usuario_id);
-create index fragmentos_vetor_textual_gin_idx
+create index if not exists fragmentos_vetor_textual_gin_idx
   on processamento.fragmentos using gin (vetor_textual);
 
-create table processamento.sinteses (
+create table if not exists processamento.sinteses (
   id uuid primary key default gen_random_uuid(),
   usuario_id uuid not null references auth.users(id) on delete cascade,
   documento_processado_id uuid not null,
@@ -1578,12 +1578,12 @@ create table processamento.sinteses (
   constraint sinteses_alvo_unique unique (documento_processado_id, tipo_alvo, alvo_id, nivel)
 );
 
-create index sinteses_documento_usuario_idx
+create index if not exists sinteses_documento_usuario_idx
   on processamento.sinteses (documento_processado_id, usuario_id);
-create index sinteses_alvo_idx
+create index if not exists sinteses_alvo_idx
   on processamento.sinteses (tipo_alvo, alvo_id);
-create index sinteses_modelo_idx on processamento.sinteses (modelo_ia_id);
-create index sinteses_prompt_idx on processamento.sinteses (versao_prompt_id);
+create index if not exists sinteses_modelo_idx on processamento.sinteses (modelo_ia_id);
+create index if not exists sinteses_prompt_idx on processamento.sinteses (versao_prompt_id);
 
 alter table processamento.documentos_processados enable row level security;
 alter table processamento.secoes enable row level security;
@@ -1617,13 +1617,13 @@ revoke all on all functions in schema processamento from public, anon, authentic
 -- 0012_indices_fk_processamento_hierarquia
 -- Índices dedicados para FKs simples de usuario_id detectadas pelo advisor.
 
-create index secoes_usuario_idx
+create index if not exists secoes_usuario_idx
   on processamento.secoes (usuario_id);
 
-create index fragmentos_usuario_idx
+create index if not exists fragmentos_usuario_idx
   on processamento.fragmentos (usuario_id);
 
-create index sinteses_usuario_idx
+create index if not exists sinteses_usuario_idx
   on processamento.sinteses (usuario_id);
 
 -- 0013_processamento_elementos_vetores_grafo
@@ -1632,7 +1632,7 @@ create index sinteses_usuario_idx
 alter table processamento.fragmentos
   add constraint fragmentos_id_usuario_unique unique (id, usuario_id);
 
-create table processamento.vetores (
+create table if not exists processamento.vetores (
   id uuid primary key default gen_random_uuid(),
   usuario_id uuid not null references auth.users(id) on delete cascade,
   tipo_alvo text not null,
@@ -1648,13 +1648,13 @@ create table processamento.vetores (
   constraint vetores_alvo_modelo_versao_unique unique (usuario_id, tipo_alvo, alvo_id, modelo_ia_id, versao)
 );
 
-create index vetores_usuario_idx on processamento.vetores (usuario_id);
-create index vetores_alvo_idx on processamento.vetores (usuario_id, tipo_alvo, alvo_id);
-create index vetores_modelo_idx on processamento.vetores (modelo_ia_id);
-create index vetores_embedding_hnsw_cosine_idx
+create index if not exists vetores_usuario_idx on processamento.vetores (usuario_id);
+create index if not exists vetores_alvo_idx on processamento.vetores (usuario_id, tipo_alvo, alvo_id);
+create index if not exists vetores_modelo_idx on processamento.vetores (modelo_ia_id);
+create index if not exists vetores_embedding_hnsw_cosine_idx
   on processamento.vetores using hnsw (embedding extensions.vector_cosine_ops);
 
-create table processamento.elementos (
+create table if not exists processamento.elementos (
   id uuid primary key default gen_random_uuid(),
   usuario_id uuid not null references auth.users(id) on delete cascade,
   documento_processado_id uuid not null,
@@ -1688,13 +1688,13 @@ create table processamento.elementos (
   constraint elementos_conteudo_estruturado_check check (conteudo_estruturado is null or jsonb_typeof(conteudo_estruturado) = 'object')
 );
 
-create index elementos_usuario_idx on processamento.elementos (usuario_id);
-create index elementos_documento_usuario_idx on processamento.elementos (documento_processado_id, usuario_id);
-create index elementos_tipo_estado_idx on processamento.elementos (usuario_id, tipo, estado_revisao);
-create index elementos_modelo_idx on processamento.elementos (modelo_ia_id);
-create index elementos_prompt_idx on processamento.elementos (versao_prompt_id);
+create index if not exists elementos_usuario_idx on processamento.elementos (usuario_id);
+create index if not exists elementos_documento_usuario_idx on processamento.elementos (documento_processado_id, usuario_id);
+create index if not exists elementos_tipo_estado_idx on processamento.elementos (usuario_id, tipo, estado_revisao);
+create index if not exists elementos_modelo_idx on processamento.elementos (modelo_ia_id);
+create index if not exists elementos_prompt_idx on processamento.elementos (versao_prompt_id);
 
-create table processamento.evidencias (
+create table if not exists processamento.evidencias (
   id uuid primary key default gen_random_uuid(),
   usuario_id uuid not null references auth.users(id) on delete cascade,
   elemento_id uuid not null,
@@ -1718,11 +1718,11 @@ create table processamento.evidencias (
   )
 );
 
-create index evidencias_usuario_idx on processamento.evidencias (usuario_id);
-create index evidencias_elemento_usuario_idx on processamento.evidencias (elemento_id, usuario_id);
-create index evidencias_fragmento_usuario_idx on processamento.evidencias (fragmento_id, usuario_id);
+create index if not exists evidencias_usuario_idx on processamento.evidencias (usuario_id);
+create index if not exists evidencias_elemento_usuario_idx on processamento.evidencias (elemento_id, usuario_id);
+create index if not exists evidencias_fragmento_usuario_idx on processamento.evidencias (fragmento_id, usuario_id);
 
-create table processamento.relacoes_elementos (
+create table if not exists processamento.relacoes_elementos (
   id uuid primary key default gen_random_uuid(),
   usuario_id uuid not null references auth.users(id) on delete cascade,
   elemento_origem_id uuid not null,
@@ -1744,10 +1744,10 @@ create table processamento.relacoes_elementos (
   constraint relacoes_elementos_unique unique (usuario_id, elemento_origem_id, tipo_relacao, elemento_destino_id)
 );
 
-create index relacoes_elementos_usuario_idx on processamento.relacoes_elementos (usuario_id);
-create index relacoes_elementos_origem_usuario_idx on processamento.relacoes_elementos (elemento_origem_id, usuario_id);
-create index relacoes_elementos_destino_usuario_idx on processamento.relacoes_elementos (elemento_destino_id, usuario_id);
-create index relacoes_elementos_tipo_idx on processamento.relacoes_elementos (usuario_id, tipo_relacao);
+create index if not exists relacoes_elementos_usuario_idx on processamento.relacoes_elementos (usuario_id);
+create index if not exists relacoes_elementos_origem_usuario_idx on processamento.relacoes_elementos (elemento_origem_id, usuario_id);
+create index if not exists relacoes_elementos_destino_usuario_idx on processamento.relacoes_elementos (elemento_destino_id, usuario_id);
+create index if not exists relacoes_elementos_tipo_idx on processamento.relacoes_elementos (usuario_id, tipo_relacao);
 
 alter table taxonomia.classificacoes_elementos
   add constraint classificacoes_elementos_elemento_usuario_fk
@@ -1787,7 +1787,7 @@ revoke all on all functions in schema processamento from public, anon, authentic
 -- 0014_indice_fk_taxonomia_elementos
 -- Índice dedicado para a FK composta adicionada em 0013.
 
-create index classificacoes_elementos_elemento_usuario_idx
+create index if not exists classificacoes_elementos_elemento_usuario_idx
   on taxonomia.classificacoes_elementos (elemento_id, usuario_id);
 
 -- 0015_integridade_proveniencia_publicacao
@@ -2885,7 +2885,7 @@ insert into storage.buckets (id, name, public)
 values ('artefatos-processamento', 'artefatos-processamento', false)
 on conflict (id) do update set public = false;
 
-create table processamento.artefatos_execucao (
+create table if not exists processamento.artefatos_execucao (
   id uuid primary key default gen_random_uuid(),
   usuario_id uuid not null references auth.users(id) on delete cascade,
   execucao_id uuid not null,
@@ -2909,9 +2909,9 @@ create table processamento.artefatos_execucao (
   constraint artefatos_execucao_caminho_unico unique (caminho_arquivo)
 );
 
-create index artefatos_execucao_execucao_usuario_idx
+create index if not exists artefatos_execucao_execucao_usuario_idx
   on processamento.artefatos_execucao (execucao_id, usuario_id);
-create index artefatos_execucao_usuario_criado_idx
+create index if not exists artefatos_execucao_usuario_criado_idx
   on processamento.artefatos_execucao (usuario_id, criado_em desc);
 
 alter table processamento.artefatos_execucao enable row level security;
