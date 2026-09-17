@@ -1,3 +1,7 @@
+-- ==========================================
+-- File: 20260916183543_0001_fundacao.sql
+-- ==========================================
+
 -- 0001_fundacao
 -- Fundação mínima e reversível do Cérebro Autoral.
 -- Não cria tabelas de domínio.
@@ -40,6 +44,11 @@ revoke all on schema auditoria from public, anon, authenticated;
 revoke all on schema aplicacao from public, anon, authenticated;
 
 commit;
+
+
+-- ==========================================
+-- File: 20260916184023_0002_sistema.sql
+-- ==========================================
 
 -- 0002_sistema
 -- Catálogo técnico de modelos, prompts, pipelines e preferências não secretas.
@@ -141,18 +150,21 @@ comment on column sistema.configuracoes_usuario.preferencias_visuais is
 
 alter table sistema.configuracoes_usuario enable row level security;
 
+drop policy if exists configuracoes_usuario_selecionar_proprias on sistema.configuracoes_usuario;
 create policy configuracoes_usuario_selecionar_proprias
   on sistema.configuracoes_usuario
   for select
   to authenticated
   using ((select auth.uid()) = usuario_id);
 
+drop policy if exists configuracoes_usuario_inserir_proprias on sistema.configuracoes_usuario;
 create policy configuracoes_usuario_inserir_proprias
   on sistema.configuracoes_usuario
   for insert
   to authenticated
   with check ((select auth.uid()) = usuario_id);
 
+drop policy if exists configuracoes_usuario_atualizar_proprias on sistema.configuracoes_usuario;
 create policy configuracoes_usuario_atualizar_proprias
   on sistema.configuracoes_usuario
   for update
@@ -160,6 +172,7 @@ create policy configuracoes_usuario_atualizar_proprias
   using ((select auth.uid()) = usuario_id)
   with check ((select auth.uid()) = usuario_id);
 
+drop policy if exists configuracoes_usuario_excluir_proprias on sistema.configuracoes_usuario;
 create policy configuracoes_usuario_excluir_proprias
   on sistema.configuracoes_usuario
   for delete
@@ -173,6 +186,11 @@ revoke all on all sequences in schema sistema from public, anon, authenticated;
 revoke all on all functions in schema sistema from public, anon, authenticated;
 
 commit;
+
+
+-- ==========================================
+-- File: 20260916185118_0003_taxonomia.sql
+-- ==========================================
 
 -- 0003_taxonomia
 -- Taxonomia Mestre versionada do Cérebro Autoral.
@@ -346,18 +364,21 @@ create index if not exists classificacoes_elementos_conceito_idx
 
 alter table taxonomia.classificacoes_elementos enable row level security;
 
+drop policy if exists classificacoes_elementos_selecionar_proprias on taxonomia.classificacoes_elementos;
 create policy classificacoes_elementos_selecionar_proprias
   on taxonomia.classificacoes_elementos
   for select
   to authenticated
   using ((select auth.uid()) = usuario_id);
 
+drop policy if exists classificacoes_elementos_inserir_proprias on taxonomia.classificacoes_elementos;
 create policy classificacoes_elementos_inserir_proprias
   on taxonomia.classificacoes_elementos
   for insert
   to authenticated
   with check ((select auth.uid()) = usuario_id);
 
+drop policy if exists classificacoes_elementos_atualizar_proprias on taxonomia.classificacoes_elementos;
 create policy classificacoes_elementos_atualizar_proprias
   on taxonomia.classificacoes_elementos
   for update
@@ -365,6 +386,7 @@ create policy classificacoes_elementos_atualizar_proprias
   using ((select auth.uid()) = usuario_id)
   with check ((select auth.uid()) = usuario_id);
 
+drop policy if exists classificacoes_elementos_excluir_proprias on taxonomia.classificacoes_elementos;
 create policy classificacoes_elementos_excluir_proprias
   on taxonomia.classificacoes_elementos
   for delete
@@ -418,6 +440,11 @@ begin
     raise exception 'Esperadas 4 policies em classificacoes_elementos, encontradas %', policy_count;
   end if;
 end $$;
+
+
+-- ==========================================
+-- File: 20260916185526_0004_biblioteca.sql
+-- ==========================================
 
 -- 0004_biblioteca
 -- Estrutura canônica da Biblioteca: obras lógicas e suas versões físicas.
@@ -573,18 +600,21 @@ create index if not exists versoes_obras_usuario_estado_idx
 alter table biblioteca.obras enable row level security;
 alter table biblioteca.versoes_obras enable row level security;
 
+drop policy if exists obras_selecionar_proprias on biblioteca.obras;
 create policy obras_selecionar_proprias
   on biblioteca.obras
   for select
   to authenticated
   using ((select auth.uid()) = usuario_id);
 
+drop policy if exists obras_inserir_proprias on biblioteca.obras;
 create policy obras_inserir_proprias
   on biblioteca.obras
   for insert
   to authenticated
   with check ((select auth.uid()) = usuario_id);
 
+drop policy if exists obras_atualizar_proprias on biblioteca.obras;
 create policy obras_atualizar_proprias
   on biblioteca.obras
   for update
@@ -592,24 +622,28 @@ create policy obras_atualizar_proprias
   using ((select auth.uid()) = usuario_id)
   with check ((select auth.uid()) = usuario_id);
 
+drop policy if exists obras_excluir_proprias on biblioteca.obras;
 create policy obras_excluir_proprias
   on biblioteca.obras
   for delete
   to authenticated
   using ((select auth.uid()) = usuario_id);
 
+drop policy if exists versoes_obras_selecionar_proprias on biblioteca.versoes_obras;
 create policy versoes_obras_selecionar_proprias
   on biblioteca.versoes_obras
   for select
   to authenticated
   using ((select auth.uid()) = usuario_id);
 
+drop policy if exists versoes_obras_inserir_proprias on biblioteca.versoes_obras;
 create policy versoes_obras_inserir_proprias
   on biblioteca.versoes_obras
   for insert
   to authenticated
   with check ((select auth.uid()) = usuario_id);
 
+drop policy if exists versoes_obras_atualizar_proprias on biblioteca.versoes_obras;
 create policy versoes_obras_atualizar_proprias
   on biblioteca.versoes_obras
   for update
@@ -617,6 +651,7 @@ create policy versoes_obras_atualizar_proprias
   using ((select auth.uid()) = usuario_id)
   with check ((select auth.uid()) = usuario_id);
 
+drop policy if exists versoes_obras_excluir_proprias on biblioteca.versoes_obras;
 create policy versoes_obras_excluir_proprias
   on biblioteca.versoes_obras
   for delete
@@ -673,6 +708,11 @@ begin
   end if;
 end $$;
 
+
+-- ==========================================
+-- File: 20260916185621_0005_indice_fk_biblioteca.sql
+-- ==========================================
+
 -- 0005_indice_fk_biblioteca
 -- Cobre a FK composta (obra_id, usuario_id) de biblioteca.versoes_obras.
 -- O advisor de performance do Supabase detectou a ausência deste índice após
@@ -697,6 +737,11 @@ begin
   end if;
 end $$;
 
+
+-- ==========================================
+-- File: 20260916190006_0006_storage_biblioteca.sql
+-- ==========================================
+
 -- 0006_storage_biblioteca
 -- Bucket privado e políticas de acesso dos arquivos originais da Biblioteca.
 --
@@ -715,6 +760,7 @@ set name = excluded.name,
 -- Usuário autenticado só pode visualizar arquivos cujo primeiro segmento
 -- da pasta seja o próprio auth.uid(). Isso também permite que arquivos
 -- enviados pelo backend em nome do usuário continuem acessíveis ao usuário.
+drop policy if exists originais_biblioteca_selecionar_proprios on storage.objects;
 create policy originais_biblioteca_selecionar_proprios
   on storage.objects
   for select
@@ -724,6 +770,7 @@ create policy originais_biblioteca_selecionar_proprios
     and (storage.foldername(name))[1] = (select auth.uid())::text
   );
 
+drop policy if exists originais_biblioteca_inserir_proprios on storage.objects;
 create policy originais_biblioteca_inserir_proprios
   on storage.objects
   for insert
@@ -733,6 +780,7 @@ create policy originais_biblioteca_inserir_proprios
     and (storage.foldername(name))[1] = (select auth.uid())::text
   );
 
+drop policy if exists originais_biblioteca_atualizar_proprios on storage.objects;
 create policy originais_biblioteca_atualizar_proprios
   on storage.objects
   for update
@@ -746,6 +794,7 @@ create policy originais_biblioteca_atualizar_proprios
     and (storage.foldername(name))[1] = (select auth.uid())::text
   );
 
+drop policy if exists originais_biblioteca_excluir_proprios on storage.objects;
 create policy originais_biblioteca_excluir_proprios
   on storage.objects
   for delete
@@ -786,6 +835,11 @@ begin
     raise exception 'Esperadas 4 policies do Storage da Biblioteca, encontradas %', policy_count;
   end if;
 end $$;
+
+
+-- ==========================================
+-- File: 20260916190833_0007_api_aplicacao_biblioteca.sql
+-- ==========================================
 
 -- 0007_api_aplicacao_biblioteca
 -- Expõe somente funções controladas no schema aplicacao.
@@ -1109,6 +1163,11 @@ begin
   end if;
 end $$;
 
+
+-- ==========================================
+-- File: 20260916192647_0008_processamento_execucoes.sql
+-- ==========================================
+
 -- 0008_processamento_execucoes
 -- Fundação operacional do Pipeline Documental.
 -- Cria execuções completas e etapas idempotentes/reexecutáveis.
@@ -1255,43 +1314,51 @@ create index if not exists etapas_execucao_usuario_estado_idx
 alter table processamento.execucoes enable row level security;
 alter table processamento.etapas_execucao enable row level security;
 
+drop policy if exists execucoes_selecionar_proprias on processamento.execucoes;
 create policy execucoes_selecionar_proprias
   on processamento.execucoes
   for select to authenticated
   using ((select auth.uid()) = usuario_id);
 
+drop policy if exists execucoes_inserir_proprias on processamento.execucoes;
 create policy execucoes_inserir_proprias
   on processamento.execucoes
   for insert to authenticated
   with check ((select auth.uid()) = usuario_id);
 
+drop policy if exists execucoes_atualizar_proprias on processamento.execucoes;
 create policy execucoes_atualizar_proprias
   on processamento.execucoes
   for update to authenticated
   using ((select auth.uid()) = usuario_id)
   with check ((select auth.uid()) = usuario_id);
 
+drop policy if exists execucoes_excluir_proprias on processamento.execucoes;
 create policy execucoes_excluir_proprias
   on processamento.execucoes
   for delete to authenticated
   using ((select auth.uid()) = usuario_id);
 
+drop policy if exists etapas_execucao_selecionar_proprias on processamento.etapas_execucao;
 create policy etapas_execucao_selecionar_proprias
   on processamento.etapas_execucao
   for select to authenticated
   using ((select auth.uid()) = usuario_id);
 
+drop policy if exists etapas_execucao_inserir_proprias on processamento.etapas_execucao;
 create policy etapas_execucao_inserir_proprias
   on processamento.etapas_execucao
   for insert to authenticated
   with check ((select auth.uid()) = usuario_id);
 
+drop policy if exists etapas_execucao_atualizar_proprias on processamento.etapas_execucao;
 create policy etapas_execucao_atualizar_proprias
   on processamento.etapas_execucao
   for update to authenticated
   using ((select auth.uid()) = usuario_id)
   with check ((select auth.uid()) = usuario_id);
 
+drop policy if exists etapas_execucao_excluir_proprias on processamento.etapas_execucao;
 create policy etapas_execucao_excluir_proprias
   on processamento.etapas_execucao
   for delete to authenticated
@@ -1339,6 +1406,11 @@ begin
   end if;
 end $$;
 
+
+-- ==========================================
+-- File: 20260916192731_0009_indice_fk_etapas_execucao.sql
+-- ==========================================
+
 -- 0009_indice_fk_etapas_execucao
 -- Corrige o alerta do advisor de performance após 0008_processamento_execucoes.
 
@@ -1360,6 +1432,11 @@ begin
     raise exception 'Indice de suporte a FK das etapas nao foi criado';
   end if;
 end $$;
+
+
+-- ==========================================
+-- File: 20260916194638_0010_seeds_versoes_base.sql
+-- ==========================================
 
 -- 0010_seeds_versoes_base
 -- Registra as versões técnicas mínimas necessárias para que o Pipeline Documental
@@ -1395,6 +1472,11 @@ values (
   now()
 )
 on conflict (numero_versao) do nothing;
+
+
+-- ==========================================
+-- File: 20260916195547_0011_processamento_documentos_hierarquia.sql
+-- ==========================================
 
 -- 0011_processamento_documentos_hierarquia
 -- Representação computacional hierárquica: documento, seções, fragmentos e sínteses.
@@ -1590,29 +1672,66 @@ alter table processamento.secoes enable row level security;
 alter table processamento.fragmentos enable row level security;
 alter table processamento.sinteses enable row level security;
 
-create policy documentos_processados_selecionar_proprios on processamento.documentos_processados for select to authenticated using ((select auth.uid()) = usuario_id);
-create policy documentos_processados_inserir_proprios on processamento.documentos_processados for insert to authenticated with check ((select auth.uid()) = usuario_id);
-create policy documentos_processados_atualizar_proprios on processamento.documentos_processados for update to authenticated using ((select auth.uid()) = usuario_id) with check ((select auth.uid()) = usuario_id);
-create policy documentos_processados_excluir_proprios on processamento.documentos_processados for delete to authenticated using ((select auth.uid()) = usuario_id);
+drop policy if exists documentos_processados_selecionar_proprios on processamento.documentos_processados;
+create policy documentos_processados_selecionar_proprios
+  on processamento.documentos_processados for select to authenticated using ((select auth.uid()) = usuario_id);
+drop policy if exists documentos_processados_inserir_proprios on processamento.documentos_processados;
+create policy documentos_processados_inserir_proprios
+  on processamento.documentos_processados for insert to authenticated with check ((select auth.uid()) = usuario_id);
+drop policy if exists documentos_processados_atualizar_proprios on processamento.documentos_processados;
+create policy documentos_processados_atualizar_proprios
+  on processamento.documentos_processados for update to authenticated using ((select auth.uid()) = usuario_id) with check ((select auth.uid()) = usuario_id);
+drop policy if exists documentos_processados_excluir_proprios on processamento.documentos_processados;
+create policy documentos_processados_excluir_proprios
+  on processamento.documentos_processados for delete to authenticated using ((select auth.uid()) = usuario_id);
 
-create policy secoes_selecionar_proprias on processamento.secoes for select to authenticated using ((select auth.uid()) = usuario_id);
-create policy secoes_inserir_proprias on processamento.secoes for insert to authenticated with check ((select auth.uid()) = usuario_id);
-create policy secoes_atualizar_proprias on processamento.secoes for update to authenticated using ((select auth.uid()) = usuario_id) with check ((select auth.uid()) = usuario_id);
-create policy secoes_excluir_proprias on processamento.secoes for delete to authenticated using ((select auth.uid()) = usuario_id);
+drop policy if exists secoes_selecionar_proprias on processamento.secoes;
+create policy secoes_selecionar_proprias
+  on processamento.secoes for select to authenticated using ((select auth.uid()) = usuario_id);
+drop policy if exists secoes_inserir_proprias on processamento.secoes;
+create policy secoes_inserir_proprias
+  on processamento.secoes for insert to authenticated with check ((select auth.uid()) = usuario_id);
+drop policy if exists secoes_atualizar_proprias on processamento.secoes;
+create policy secoes_atualizar_proprias
+  on processamento.secoes for update to authenticated using ((select auth.uid()) = usuario_id) with check ((select auth.uid()) = usuario_id);
+drop policy if exists secoes_excluir_proprias on processamento.secoes;
+create policy secoes_excluir_proprias
+  on processamento.secoes for delete to authenticated using ((select auth.uid()) = usuario_id);
 
-create policy fragmentos_selecionar_proprios on processamento.fragmentos for select to authenticated using ((select auth.uid()) = usuario_id);
-create policy fragmentos_inserir_proprios on processamento.fragmentos for insert to authenticated with check ((select auth.uid()) = usuario_id);
-create policy fragmentos_atualizar_proprios on processamento.fragmentos for update to authenticated using ((select auth.uid()) = usuario_id) with check ((select auth.uid()) = usuario_id);
-create policy fragmentos_excluir_proprios on processamento.fragmentos for delete to authenticated using ((select auth.uid()) = usuario_id);
+drop policy if exists fragmentos_selecionar_proprios on processamento.fragmentos;
+create policy fragmentos_selecionar_proprios
+  on processamento.fragmentos for select to authenticated using ((select auth.uid()) = usuario_id);
+drop policy if exists fragmentos_inserir_proprios on processamento.fragmentos;
+create policy fragmentos_inserir_proprios
+  on processamento.fragmentos for insert to authenticated with check ((select auth.uid()) = usuario_id);
+drop policy if exists fragmentos_atualizar_proprios on processamento.fragmentos;
+create policy fragmentos_atualizar_proprios
+  on processamento.fragmentos for update to authenticated using ((select auth.uid()) = usuario_id) with check ((select auth.uid()) = usuario_id);
+drop policy if exists fragmentos_excluir_proprios on processamento.fragmentos;
+create policy fragmentos_excluir_proprios
+  on processamento.fragmentos for delete to authenticated using ((select auth.uid()) = usuario_id);
 
-create policy sinteses_selecionar_proprias on processamento.sinteses for select to authenticated using ((select auth.uid()) = usuario_id);
-create policy sinteses_inserir_proprias on processamento.sinteses for insert to authenticated with check ((select auth.uid()) = usuario_id);
-create policy sinteses_atualizar_proprias on processamento.sinteses for update to authenticated using ((select auth.uid()) = usuario_id) with check ((select auth.uid()) = usuario_id);
-create policy sinteses_excluir_proprias on processamento.sinteses for delete to authenticated using ((select auth.uid()) = usuario_id);
+drop policy if exists sinteses_selecionar_proprias on processamento.sinteses;
+create policy sinteses_selecionar_proprias
+  on processamento.sinteses for select to authenticated using ((select auth.uid()) = usuario_id);
+drop policy if exists sinteses_inserir_proprias on processamento.sinteses;
+create policy sinteses_inserir_proprias
+  on processamento.sinteses for insert to authenticated with check ((select auth.uid()) = usuario_id);
+drop policy if exists sinteses_atualizar_proprias on processamento.sinteses;
+create policy sinteses_atualizar_proprias
+  on processamento.sinteses for update to authenticated using ((select auth.uid()) = usuario_id) with check ((select auth.uid()) = usuario_id);
+drop policy if exists sinteses_excluir_proprias on processamento.sinteses;
+create policy sinteses_excluir_proprias
+  on processamento.sinteses for delete to authenticated using ((select auth.uid()) = usuario_id);
 
 revoke all on all tables in schema processamento from public, anon, authenticated;
 revoke all on all sequences in schema processamento from public, anon, authenticated;
 revoke all on all functions in schema processamento from public, anon, authenticated;
+
+
+-- ==========================================
+-- File: 20260916195710_0012_indices_fk_processamento_hierarquia.sql
+-- ==========================================
 
 -- 0012_indices_fk_processamento_hierarquia
 -- Índices dedicados para FKs simples de usuario_id detectadas pelo advisor.
@@ -1625,6 +1744,11 @@ create index if not exists fragmentos_usuario_idx
 
 create index if not exists sinteses_usuario_idx
   on processamento.sinteses (usuario_id);
+
+
+-- ==========================================
+-- File: 20260916200317_0013_processamento_elementos_vetores_grafo.sql
+-- ==========================================
 
 -- 0013_processamento_elementos_vetores_grafo
 -- Fecha a representação intelectual do Documento Processado e a FK adiada da Taxonomia.
@@ -1760,35 +1884,77 @@ alter table processamento.elementos enable row level security;
 alter table processamento.evidencias enable row level security;
 alter table processamento.relacoes_elementos enable row level security;
 
-create policy vetores_selecionar_proprios on processamento.vetores for select to authenticated using ((select auth.uid()) = usuario_id);
-create policy vetores_inserir_proprios on processamento.vetores for insert to authenticated with check ((select auth.uid()) = usuario_id);
-create policy vetores_atualizar_proprios on processamento.vetores for update to authenticated using ((select auth.uid()) = usuario_id) with check ((select auth.uid()) = usuario_id);
-create policy vetores_excluir_proprios on processamento.vetores for delete to authenticated using ((select auth.uid()) = usuario_id);
+drop policy if exists vetores_selecionar_proprios on processamento.vetores;
+create policy vetores_selecionar_proprios
+  on processamento.vetores for select to authenticated using ((select auth.uid()) = usuario_id);
+drop policy if exists vetores_inserir_proprios on processamento.vetores;
+create policy vetores_inserir_proprios
+  on processamento.vetores for insert to authenticated with check ((select auth.uid()) = usuario_id);
+drop policy if exists vetores_atualizar_proprios on processamento.vetores;
+create policy vetores_atualizar_proprios
+  on processamento.vetores for update to authenticated using ((select auth.uid()) = usuario_id) with check ((select auth.uid()) = usuario_id);
+drop policy if exists vetores_excluir_proprios on processamento.vetores;
+create policy vetores_excluir_proprios
+  on processamento.vetores for delete to authenticated using ((select auth.uid()) = usuario_id);
 
-create policy elementos_selecionar_proprios on processamento.elementos for select to authenticated using ((select auth.uid()) = usuario_id);
-create policy elementos_inserir_proprios on processamento.elementos for insert to authenticated with check ((select auth.uid()) = usuario_id);
-create policy elementos_atualizar_proprios on processamento.elementos for update to authenticated using ((select auth.uid()) = usuario_id) with check ((select auth.uid()) = usuario_id);
-create policy elementos_excluir_proprios on processamento.elementos for delete to authenticated using ((select auth.uid()) = usuario_id);
+drop policy if exists elementos_selecionar_proprios on processamento.elementos;
+create policy elementos_selecionar_proprios
+  on processamento.elementos for select to authenticated using ((select auth.uid()) = usuario_id);
+drop policy if exists elementos_inserir_proprios on processamento.elementos;
+create policy elementos_inserir_proprios
+  on processamento.elementos for insert to authenticated with check ((select auth.uid()) = usuario_id);
+drop policy if exists elementos_atualizar_proprios on processamento.elementos;
+create policy elementos_atualizar_proprios
+  on processamento.elementos for update to authenticated using ((select auth.uid()) = usuario_id) with check ((select auth.uid()) = usuario_id);
+drop policy if exists elementos_excluir_proprios on processamento.elementos;
+create policy elementos_excluir_proprios
+  on processamento.elementos for delete to authenticated using ((select auth.uid()) = usuario_id);
 
-create policy evidencias_selecionar_proprias on processamento.evidencias for select to authenticated using ((select auth.uid()) = usuario_id);
-create policy evidencias_inserir_proprias on processamento.evidencias for insert to authenticated with check ((select auth.uid()) = usuario_id);
-create policy evidencias_atualizar_proprias on processamento.evidencias for update to authenticated using ((select auth.uid()) = usuario_id) with check ((select auth.uid()) = usuario_id);
-create policy evidencias_excluir_proprias on processamento.evidencias for delete to authenticated using ((select auth.uid()) = usuario_id);
+drop policy if exists evidencias_selecionar_proprias on processamento.evidencias;
+create policy evidencias_selecionar_proprias
+  on processamento.evidencias for select to authenticated using ((select auth.uid()) = usuario_id);
+drop policy if exists evidencias_inserir_proprias on processamento.evidencias;
+create policy evidencias_inserir_proprias
+  on processamento.evidencias for insert to authenticated with check ((select auth.uid()) = usuario_id);
+drop policy if exists evidencias_atualizar_proprias on processamento.evidencias;
+create policy evidencias_atualizar_proprias
+  on processamento.evidencias for update to authenticated using ((select auth.uid()) = usuario_id) with check ((select auth.uid()) = usuario_id);
+drop policy if exists evidencias_excluir_proprias on processamento.evidencias;
+create policy evidencias_excluir_proprias
+  on processamento.evidencias for delete to authenticated using ((select auth.uid()) = usuario_id);
 
-create policy relacoes_elementos_selecionar_proprias on processamento.relacoes_elementos for select to authenticated using ((select auth.uid()) = usuario_id);
-create policy relacoes_elementos_inserir_proprias on processamento.relacoes_elementos for insert to authenticated with check ((select auth.uid()) = usuario_id);
-create policy relacoes_elementos_atualizar_proprias on processamento.relacoes_elementos for update to authenticated using ((select auth.uid()) = usuario_id) with check ((select auth.uid()) = usuario_id);
-create policy relacoes_elementos_excluir_proprias on processamento.relacoes_elementos for delete to authenticated using ((select auth.uid()) = usuario_id);
+drop policy if exists relacoes_elementos_selecionar_proprias on processamento.relacoes_elementos;
+create policy relacoes_elementos_selecionar_proprias
+  on processamento.relacoes_elementos for select to authenticated using ((select auth.uid()) = usuario_id);
+drop policy if exists relacoes_elementos_inserir_proprias on processamento.relacoes_elementos;
+create policy relacoes_elementos_inserir_proprias
+  on processamento.relacoes_elementos for insert to authenticated with check ((select auth.uid()) = usuario_id);
+drop policy if exists relacoes_elementos_atualizar_proprias on processamento.relacoes_elementos;
+create policy relacoes_elementos_atualizar_proprias
+  on processamento.relacoes_elementos for update to authenticated using ((select auth.uid()) = usuario_id) with check ((select auth.uid()) = usuario_id);
+drop policy if exists relacoes_elementos_excluir_proprias on processamento.relacoes_elementos;
+create policy relacoes_elementos_excluir_proprias
+  on processamento.relacoes_elementos for delete to authenticated using ((select auth.uid()) = usuario_id);
 
 revoke all on all tables in schema processamento from public, anon, authenticated;
 revoke all on all sequences in schema processamento from public, anon, authenticated;
 revoke all on all functions in schema processamento from public, anon, authenticated;
+
+
+-- ==========================================
+-- File: 20260916200419_0014_indice_fk_taxonomia_elementos.sql
+-- ==========================================
 
 -- 0014_indice_fk_taxonomia_elementos
 -- Índice dedicado para a FK composta adicionada em 0013.
 
 create index if not exists classificacoes_elementos_elemento_usuario_idx
   on taxonomia.classificacoes_elementos (elemento_id, usuario_id);
+
+
+-- ==========================================
+-- File: 20260916200813_0015_integridade_proveniencia_publicacao.sql
+-- ==========================================
 
 -- 0015_integridade_proveniencia_publicacao
 -- Evidências só podem apontar para fragmentos do mesmo Documento Processado.
@@ -1798,7 +1964,7 @@ alter table processamento.documentos_processados
   add constraint documentos_processados_publicacao_ativa_check
   check (estado <> 'ativo' or publicado_em is not null);
 
-create function processamento.validar_evidencia_mesmo_documento()
+create or replace function processamento.validar_evidencia_mesmo_documento()
 returns trigger
 language plpgsql
 security definer
@@ -1835,11 +2001,17 @@ $$;
 revoke all on function processamento.validar_evidencia_mesmo_documento()
   from public, anon, authenticated;
 
+drop trigger if exists evidencias_mesmo_documento_trigger on processamento.evidencias;
 create trigger evidencias_mesmo_documento_trigger
 before insert or update of usuario_id, elemento_id, fragmento_id
 on processamento.evidencias
 for each row
 execute function processamento.validar_evidencia_mesmo_documento();
+
+
+-- ==========================================
+-- File: 20260916200935_0016_deduplicacao_hash_biblioteca.sql
+-- ==========================================
 
 -- 0016_deduplicacao_hash_biblioteca
 -- Deduplicação por usuario+SHA-256 com lock transacional, sem transformar o índice
@@ -1975,6 +2147,11 @@ revoke all on function aplicacao.registrar_obra_arquivo(
 grant execute on function aplicacao.registrar_obra_arquivo(
   uuid, uuid, text, text, text, text, text, text, text, text, bigint, text, text, text, date, text
 ) to authenticated;
+
+
+-- ==========================================
+-- File: 20260916202853_0017_api_backend_workflow_processamento.sql
+-- ==========================================
 
 -- 0017_api_backend_workflow_processamento
 -- Operações server-only do workflow. Nenhuma função abaixo é executável pelo navegador.
@@ -2282,6 +2459,11 @@ grant execute on function aplicacao.backend_iniciar_etapa(uuid, text, text, nume
 grant execute on function aplicacao.backend_concluir_etapa(uuid, text, numeric, text, text, jsonb) to service_role;
 grant execute on function aplicacao.backend_falhar_execucao(uuid, text, text, text, jsonb) to service_role;
 
+
+-- ==========================================
+-- File: 20260916212133_0018_recuperacao_orquestracao_workflow.sql
+-- ==========================================
+
 -- 0018_recuperacao_orquestracao_workflow
 -- Reserva de disparo, recuperação de execuções e estado coerente do workflow durável.
 
@@ -2312,7 +2494,7 @@ comment on column processamento.execucoes.workflow_tentativas is
 
 drop function if exists aplicacao.backend_iniciar_processamento(uuid, uuid);
 
-create function aplicacao.backend_iniciar_processamento(
+create or replace function aplicacao.backend_iniciar_processamento(
   p_usuario_id uuid,
   p_versao_obra_id uuid
 )
@@ -2626,6 +2808,11 @@ grant execute on function aplicacao.backend_registrar_workflow_iniciado(uuid) to
 grant execute on function aplicacao.backend_iniciar_etapa(uuid, text, text, numeric) to service_role;
 grant execute on function aplicacao.backend_falhar_execucao(uuid, text, text, text, jsonb) to service_role;
 
+
+-- ==========================================
+-- File: 20260916221057_0019_idempotencia_transicoes_workflow.sql
+-- ==========================================
+
 -- 0019_idempotencia_transicoes_workflow
 -- Endurece as transições do workflow contra chamadas atrasadas, replays e regressão de estado.
 
@@ -2877,6 +3064,11 @@ grant execute on function aplicacao.backend_iniciar_etapa(uuid, text, text, nume
 grant execute on function aplicacao.backend_concluir_etapa(uuid, text, numeric, text, text, jsonb) to service_role;
 grant execute on function aplicacao.backend_falhar_execucao(uuid, text, text, text, jsonb) to service_role;
 
+
+-- ==========================================
+-- File: 20260916223016_0020_artefatos_intermediarios_processamento.sql
+-- ==========================================
+
 -- 0020_artefatos_intermediarios_processamento
 -- Persiste metadados/proveniência de artefatos intermediários sem confundi-los
 -- com um Documento Processado publicado. O conteúdo grande permanece em Storage privado.
@@ -3032,14 +3224,21 @@ revoke all on function aplicacao.backend_registrar_artefato_execucao(uuid, text,
 grant execute on function aplicacao.backend_obter_artefato_execucao(uuid, text) to service_role;
 grant execute on function aplicacao.backend_registrar_artefato_execucao(uuid, text, text, text, bigint, text, jsonb) to service_role;
 
+
+-- ==========================================
+-- File: 20260916225622_0021_politica_negacao_artefatos_processamento.sql
+-- ==========================================
+
 -- 0021_politica_negacao_artefatos_processamento
 -- Torna explícito que artefatos intermediários são backend-only.
 -- A policy não concede privilégios; grants de tabela/schema continuam revogados.
 
+drop policy if exists artefatos_execucao_sem_acesso_cliente on processamento.artefatos_execucao;
 create policy artefatos_execucao_sem_acesso_cliente
-on processamento.artefatos_execucao
+  on processamento.artefatos_execucao
 for all
 to anon, authenticated
 using (false)
 with check (false);
+
 
