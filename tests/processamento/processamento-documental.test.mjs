@@ -10,6 +10,8 @@ import {
   normalizarArtefatoExtraido,
   validarArtefatoNormalizado,
 } from '../../src/dominios/processamento/normalizar-conteudo.ts'
+import { identificarEstruturaConteudo } from '../../src/dominios/processamento/identificar-estrutura.ts'
+
 
 const encoder = new TextEncoder()
 
@@ -305,3 +307,23 @@ test('artefato normalizado é rejeitado se apontar para outra extração', () =>
   assert.equal(validacao.ok, false)
   if (!validacao.ok) assert.equal(validacao.codigo, 'ARTEFATO_NORMALIZADO_ORIGEM_DIVERGENTE')
 })
+
+test('identifica estrutura de documento Markdown com partes e capítulos', () => {
+  const entrada = artefatoTexto('# Parte 1: Introdução\n\n## Capítulo 1: Fundamentos\n\nEste é um parágrafo autoral.', 'markdown')
+  const normalizado = normalizarArtefatoExtraido({
+    bytes: bytes(JSON.stringify(entrada)),
+    hashArtefatoExtraido: '8'.repeat(64),
+    hashOriginalEsperado: 'e'.repeat(64),
+  })
+
+  assert.equal(normalizado.ok, true)
+  if (!normalizado.ok) return
+
+  const estruturado = identificarEstruturaConteudo(normalizado.artefato, 'a'.repeat(64))
+  assert.equal(estruturado.schema_version, 1)
+  assert.equal(estruturado.metadados.total_partes, 1)
+  assert.equal(estruturado.metadados.total_capitulos, 1)
+  assert.equal(estruturado.metadados.contem_hierarquia_explicitada, true)
+  assert.equal(estruturado.elementos.length, 3)
+})
+

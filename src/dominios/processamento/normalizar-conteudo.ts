@@ -137,39 +137,16 @@ const pdfNormalizadoSchema = z
     }
   })
 
-const artefatoNormalizadoSchema = z.union([
+export const artefatoNormalizadoSchema = z.union([
   textoNormalizadoSchema,
   markdownNormalizadoSchema,
   pdfNormalizadoSchema,
 ])
 
-export type ArtefatoConteudoNormalizado = {
-  schema_version: 1
-  formato: FormatoConteudoExtraivel
-  encoding: 'utf-8'
-  metodo: 'normalizacao_tecnica_nfc_v1'
-  fonte: {
-    nome_arquivo: string
-    tipo_mime_registrado: string
-    hash_sha256_original: string
-    hash_sha256_artefato_extraido: string
-  }
-  total_paginas: number | null
-  conteudo?: string
-  paginas?: Array<{ numero: number; conteudo: string }>
-  normalizacao: {
-    unicode: 'NFC'
-    quebras_linha: 'LF'
-    preserva_espacos_internos: true
-    alteracoes: {
-      quebras_crlf_convertidas: number
-      quebras_cr_isoladas_convertidas: number
-      segmentos_alterados_nfc: number
-      caracteres_antes: number
-      caracteres_depois: number
-    }
-  }
-}
+export type ArtefatoNormalizado = z.infer<typeof artefatoNormalizadoSchema>
+export type ArtefatoConteudoNormalizado = ArtefatoNormalizado
+
+
 
 export type ResultadoNormalizacao =
   | {
@@ -297,11 +274,21 @@ export function normalizarArtefatoExtraido({
     total_paginas: extraido.total_paginas,
   }
 
-  let conteudo: string | undefined
-  let paginas: Array<{ numero: number; conteudo: string }> | undefined
+  const normalizacao = {
+    unicode: 'NFC' as const,
+    quebras_linha: 'LF' as const,
+    preserva_espacos_internos: true as const,
+    alteracoes: {
+      quebras_crlf_convertidas: quebrasCrLf,
+      quebras_cr_isoladas_convertidas: quebrasCr,
+      segmentos_alterados_nfc: segmentosNfc,
+      caracteres_antes: caracteresAntes,
+      caracteres_depois: caracteresDepois,
+    },
+  }
 
   if (extraido.formato === 'pdf') {
-    paginas = extraido.paginas.map((pagina) => {
+    const paginasNormalizadas = extraido.paginas.map((pagina) => {
       const normalizado = normalizarSegmento(pagina.conteudo)
       quebrasCrLf += normalizado.quebrasCrLf
       quebrasCr += normalizado.quebrasCr
@@ -310,32 +297,44 @@ export function normalizarArtefatoExtraido({
       caracteresDepois += normalizado.caracteresDepois
       return { numero: pagina.numero, conteudo: normalizado.texto }
     })
-  } else {
-    const normalizado = normalizarSegmento(extraido.conteudo)
-    quebrasCrLf = normalizado.quebrasCrLf
-    quebrasCr = normalizado.quebrasCr
-    segmentosNfc = normalizado.alterouNfc ? 1 : 0
-    caracteresAntes = normalizado.caracteresAntes
-    caracteresDepois = normalizado.caracteresDepois
-    conteudo = normalizado.texto
+
+    return {
+      ok: true,
+      artefato: {
+        ...base,
+        formato: 'pdf' as const,
+        total_paginas: extraido.total_paginas,
+        paginas: paginasNormalizadas,
+        normalizacao: {
+          ...normalizacao,
+          alteracoes: {
+            quebras_crlf_convertidas: quebrasCrLf,
+            quebras_cr_isoladas_convertidas: quebrasCr,
+            segmentos_alterados_nfc: segmentosNfc,
+            caracteres_antes: caracteresAntes,
+            caracteres_depois: caracteresDepois,
+          },
+        },
+      },
+    }
   }
 
+  const normalizado = normalizarSegmento(extraido.conteudo)
   return {
     ok: true,
     artefato: {
       ...base,
-      ...(conteudo === undefined ? {} : { conteudo }),
-      ...(paginas === undefined ? {} : { paginas }),
+      formato: extraido.formato,
+      total_paginas: null,
+      conteudo: normalizado.texto,
       normalizacao: {
-        unicode: 'NFC',
-        quebras_linha: 'LF',
-        preserva_espacos_internos: true,
+        ...normalizacao,
         alteracoes: {
-          quebras_crlf_convertidas: quebrasCrLf,
-          quebras_cr_isoladas_convertidas: quebrasCr,
-          segmentos_alterados_nfc: segmentosNfc,
-          caracteres_antes: caracteresAntes,
-          caracteres_depois: caracteresDepois,
+          quebras_crlf_convertidas: normalizado.quebrasCrLf,
+          quebras_cr_isoladas_convertidas: normalizado.quebrasCr,
+          segmentos_alterados_nfc: normalizado.alterouNfc ? 1 : 0,
+          caracteres_antes: normalizado.caracteresAntes,
+          caracteres_depois: normalizado.caracteresDepois,
         },
       },
     },
